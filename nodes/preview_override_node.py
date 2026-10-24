@@ -37,6 +37,9 @@ try:
 except ImportError:
     PromptServer = None
 
+# the scripts_nodes Latent Cache hash leaves these inputs out: they shape the preview, never the latent
+PREVIEW_ONLY = {"latent_cache_ignore": True}
+
 def _suppressed_preview_image(self_, preview_format, x0):
     return None
 
@@ -998,6 +1001,7 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     max=8192,
                     step=8,
                     tooltip="Max preview side in pixels for the live widget. 0 = full sampler resolution (no downscale).",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Int.Input(
                     "jpeg_quality",
@@ -1006,11 +1010,13 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     max=100,
                     step=1,
                     tooltip="JPEG quality for the live preview transport.",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Boolean.Input(
                     "suppress_default_preview",
                     default=True,
                     tooltip="Suppress the standard sampler-node preview overlay while sampling, so only this node's frame updates. Progress bar still advances normally.",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Int.Input(
                     "preview_frames",
@@ -1021,6 +1027,7 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     tooltip="Frames to sample from each video step's latent for animated preview. "
                             "1 = single frame (current behavior, fastest). >1 = animated WebP playing back at preview_fps. "
                             "Only applies to video models (5D latents); ignored for image models.",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Int.Input(
                     "preview_fps",
@@ -1030,6 +1037,7 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     step=1,
                     tooltip="Playback FPS for the animated preview. Ignored when preview_frames=1, and when an "
                             "audio_vae is connected (the clip then plays in real time with its audio).",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Vae.Input(
                     "vae",
@@ -1037,6 +1045,7 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     tooltip="Optional LTX VAE for true-RGB previews. TAEHV-LTX = fast tiny decode "
                             "(VAE pinned to GPU). Any other LTX VAE = full-quality decode via "
                             "vae.decode() — MUCH slower per step.",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Combo.Input(
                     "tiny_vae",
@@ -1045,6 +1054,7 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     optional=True,
                     tooltip="Tiny VAE decoder from models/vae_approx for true-RGB previews. "
                             "Overrides Latent2RGB and the 'vae' input.",
+                    extra_dict=PREVIEW_ONLY,
                 ),
                 io.Vae.Input(
                     "audio_vae",
@@ -1052,6 +1062,7 @@ class ModelPreviewOverrideKJ(io.ComfyNode):
                     tooltip="Optional audio VAE for audio+video models (MiniMax H3). With preview_frames > 1 the "
                             "audio latent is decoded each step, muxed into the animated preview played back in "
                             "real time (preview_fps is ignored), and its spectrogram is drawn under the graphs.",
+                    extra_dict=PREVIEW_ONLY,
                 ),
             ],
             outputs=[io.Model.Output(tooltip="Model with preview override attached.")],
